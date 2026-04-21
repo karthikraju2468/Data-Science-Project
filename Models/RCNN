@@ -1,0 +1,37 @@
+
+import torch
+from torchvision.models.detection import fasterrcnn_resnet50_fpn, FasterRCNN_ResNet50_FPN_Weights
+from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
+
+def build_model(num_classes):
+    model = fasterrcnn_resnet50_fpn(
+        weights=FasterRCNN_ResNet50_FPN_Weights.DEFAULT
+    )
+
+    in_features = model.roi_heads.box_predictor.cls_score.in_features
+    model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
+
+    return model
+
+
+def get_model(num_classes, device, lr):
+    model = build_model(num_classes).to(device)
+
+    params = [p for p in model.parameters() if p.requires_grad]
+
+    optimizer = torch.optim.SGD(
+        params,
+        lr=lr,
+        momentum=0.9,
+        weight_decay=0.0005
+    )
+
+    scheduler = torch.optim.lr_scheduler.StepLR(
+        optimizer,
+        step_size=10,
+        gamma=0.5
+    )
+
+    print(f"Model ready — {sum(p.numel() for p in model.parameters()):,} parameters")
+
+    return model, optimizer, scheduler
