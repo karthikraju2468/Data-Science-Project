@@ -1,0 +1,17 @@
+from ultralytics import YOLO
+import os
+
+def train_yolo(dataset_path, model_size, epochs, img_size, batch_size):
+    model = YOLO(model_size)
+
+    results = model.train(
+        data=os.path.join(dataset_path, 'data.yaml'),
+        epochs=epochs,
+        imgsz=img_size,
+        batch=batch_size,
+        project='yolo_runs',
+        name='bone_fracture',
+        verbose=True
+    )
+
+    return model, results
